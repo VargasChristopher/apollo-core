@@ -1,53 +1,73 @@
 // app/index.tsx
 import { Link } from 'expo-router';
 import { StyleSheet, Text, View, Pressable } from 'react-native';
+import { colors, spacing, radii, shadows } from '../constants/theme';
 
-export default function HomeScreen() {
+export default function LandingScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Apollo Frontend</Text>
-      <Text style={styles.subtitle}>
-        One React Native codebase. Runs on iOS, Android, and Web.
-      </Text>
+    <View style={styles.root}>
+      <View style={styles.heroCard}>
+        <Text style={styles.kicker}>Apollo Core</Text>
+        <Text style={styles.title}>Unified Smart Systems.</Text>
+        <Text style={styles.subtitle}>
+          Control your Jetson-powered voice assistant and C by GE lighting
+          from a single app, on web or mobile.
+        </Text>
 
-      <Link href="/(tabs)/home" asChild>
-        <Pressable style={styles.button}>
-          <Text style={styles.buttonText}>Open app tabs</Text>
-        </Pressable>
-      </Link>
+        <Link href="/(tabs)/core" asChild>
+          <Pressable style={styles.primaryButton}>
+            <Text style={styles.primaryButtonText}>Open Controls</Text>
+          </Pressable>
+        </Link>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
-    paddingHorizontal: 24,
+    backgroundColor: colors.background,
+    paddingHorizontal: spacing.xl,
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#020617'
+  },
+  heroCard: {
+    borderRadius: radii.lg,
+    padding: spacing.xl,
+    borderWidth: 1,
+    borderColor: colors.borderSubtle,
+    backgroundColor: colors.surfaceCard,
+    ...shadows.soft,
+  },
+  kicker: {
+    color: colors.accentSoft,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: spacing.sm,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   title: {
+    color: colors.textPrimary,
     fontSize: 28,
     fontWeight: '700',
-    color: '#e5e7eb',
-    marginBottom: 8
+    marginBottom: spacing.sm,
   },
   subtitle: {
+    color: colors.textSecondary,
+    fontSize: 15,
+    marginBottom: spacing.lg,
+  },
+  primaryButton: {
+    borderRadius: radii.pill,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+    backgroundColor: colors.accent,
+    alignSelf: 'flex-start',
+  },
+  primaryButtonText: {
+    color: '#0b1120',
     fontSize: 16,
-    color: '#9ca3af',
-    textAlign: 'center',
-    marginBottom: 24
+    fontWeight: '600',
   },
-  button: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: '#38bdf8'
-  },
-  buttonText: {
-    color: '#e0f2fe',
-    fontWeight: '600'
-  }
 });

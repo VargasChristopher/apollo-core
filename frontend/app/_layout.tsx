@@ -1,15 +1,20 @@
 // app/_layout.tsx
 import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { colors } from '../constants/theme';
 
 export default function RootLayout() {
-  // This Stack controls headers / transitions for all routes in app/
   return (
-    <Stack
-      screenOptions={{
-        headerStyle: { backgroundColor: '#020617' },
-        headerTintColor: '#e5e7eb',
-        headerTitleStyle: { fontWeight: '600' }
-      }}
-    />
+    <>
+      <StatusBar style="light" />
+      <Stack
+        screenOptions={{
+          headerStyle: { backgroundColor: colors.background },
+          headerTintColor: colors.textPrimary,
+          headerTitleStyle: { fontWeight: '600' },
+          contentStyle: { backgroundColor: colors.background },
+        }}
+      />
+    </>
   );
 }
