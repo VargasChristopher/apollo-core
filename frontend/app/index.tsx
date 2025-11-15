@@ -1,4 +1,6 @@
 // app/index.tsx
+import { Platform } from 'react-native';
+import { Redirect } from 'expo-router';
 import { Link } from 'expo-router';
 import { Pressable, StyleSheet, Text, View, useColorScheme } from 'react-native';
 import {
@@ -10,6 +12,11 @@ import {
 } from '../constants/theme';
 
 export default function LandingScreen() {
+  // On web, immediately send people to /core
+  if (Platform.OS === 'web') {
+    return <Redirect href="/core" />;
+  }
+
   const colors = useThemeColors();
   const scheme = useColorScheme();
   const styles = createStyles(colors);
@@ -17,7 +24,7 @@ export default function LandingScreen() {
   return (
     <View style={styles.root}>
       <View style={styles.heroCard}>
-        <Text style={styles.kicker}>Apollo Core</Text>
+        <Text style={styles.kicker}>Apollo Hub</Text>
         <Text style={styles.title}>Unified Smart Systems.</Text>
         <Text style={styles.subtitle}>
           Control your Apollo voice assistant and smart lighting

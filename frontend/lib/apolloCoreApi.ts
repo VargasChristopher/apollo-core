@@ -15,7 +15,7 @@ export type ApolloStatus = {
 };
 
 const API_BASE_URL =
-  process.env.EXPO_PUBLIC_APOLLO_CORE_URL ?? 'http://192.168.1.50:8000';
+  process.env.EXPO_PUBLIC_APOLLO_CORE_URL ?? 'http://192.168.1.202:8000';
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE_URL}${path}`;
