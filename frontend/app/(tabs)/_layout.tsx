@@ -1,9 +1,11 @@
 // app/(tabs)/_layout.tsx
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../../constants/theme';
+import { useThemeColors } from '../../constants/theme';
 
 export default function TabsLayout() {
+  const colors = useThemeColors();
+  
   return (
     <Tabs
       screenOptions={{
@@ -25,6 +27,7 @@ export default function TabsLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
         name="lighting"
         options={{
@@ -34,6 +37,7 @@ export default function TabsLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
         name="about"
         options={{

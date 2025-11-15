@@ -9,9 +9,18 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { apolloApi, ApolloStatus } from '../../lib/apolloCoreApi';
-import { colors, spacing, radii, shadows } from '../../constants/theme';
+import {
+  useThemeColors,
+  ThemeColors,
+  spacing,
+  radii,
+  shadows,
+} from '../../constants/theme';
 
 export default function CoreScreen() {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
+
   const [status, setStatus] = useState<ApolloStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [mutating, setMutating] = useState(false);
@@ -105,7 +114,7 @@ export default function CoreScreen() {
               <Ionicons
                 name={muted ? 'mic-off-outline' : 'mic-outline'}
                 size={28}
-                color={muted ? colors.textPrimary : '#0b1120'}
+                color={muted ? colors.textPrimary : colors.background}
               />
               <Text
                 style={[
@@ -129,122 +138,123 @@ export default function CoreScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: colors.background,
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.xl,
-  },
-  heading: {
-    color: colors.textPrimary,
-    fontSize: 24,
-    fontWeight: '700',
-    marginBottom: spacing.xs,
-  },
-  subheading: {
-    color: colors.textSecondary,
-    fontSize: 14,
-    marginBottom: spacing.xl,
-  },
-  card: {
-    borderRadius: radii.lg,
-    padding: spacing.xl,
-    borderWidth: 1,
-    borderColor: colors.borderSubtle,
-    backgroundColor: colors.surfaceCard,
-    ...shadows.soft,
-  },
-  cardTitle: {
-    color: colors.textPrimary,
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: spacing.xs,
-  },
-  cardSubtitle: {
-    color: colors.textSecondary,
-    fontSize: 13,
-    marginBottom: spacing.lg,
-  },
-  centerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  loadingText: {
-    color: colors.textSecondary,
-    fontSize: 14,
-    marginLeft: spacing.sm,
-  },
-  statusRow: {
-    marginBottom: spacing.lg,
-  },
-  statusPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    borderRadius: radii.pill,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.sm,
-  },
-  statusMuted: {
-    backgroundColor: 'rgba(248,113,113,0.12)',
-  },
-  statusActive: {
-    backgroundColor: colors.accentMuted,
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 999,
-    marginRight: spacing.sm,
-  },
-  dotMuted: {
-    backgroundColor: colors.danger,
-  },
-  dotActive: {
-    backgroundColor: colors.accentSoft,
-  },
-  statusText: {
-    color: colors.textPrimary,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  statusHint: {
-    color: colors.textSecondary,
-    fontSize: 12,
-  },
-  toggleButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radii.pill,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xl,
-  },
-  toggleButtonActive: {
-    backgroundColor: colors.accent,
-  },
-  toggleButtonMuted: {
-    borderWidth: 1,
-    borderColor: colors.danger,
-    backgroundColor: 'transparent',
-  },
-  toggleButtonText: {
-    marginLeft: spacing.sm,
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#0b1120',
-  },
-  mutatingText: {
-    marginTop: spacing.sm,
-    color: colors.textMuted,
-    fontSize: 12,
-  },
-  errorText: {
-    marginTop: spacing.lg,
-    color: colors.danger,
-    fontSize: 13,
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    root: {
+      flex: 1,
+      backgroundColor: colors.background,
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing.xl,
+    },
+    heading: {
+      color: colors.textPrimary,
+      fontSize: 24,
+      fontWeight: '700',
+      marginBottom: spacing.xs,
+    },
+    subheading: {
+      color: colors.textSecondary,
+      fontSize: 14,
+      marginBottom: spacing.xl,
+    },
+    card: {
+      borderRadius: radii.lg,
+      padding: spacing.xl,
+      borderWidth: 1,
+      borderColor: colors.borderSubtle,
+      backgroundColor: colors.surfaceCard,
+      ...shadows.soft,
+    },
+    cardTitle: {
+      color: colors.textPrimary,
+      fontSize: 18,
+      fontWeight: '600',
+      marginBottom: spacing.xs,
+    },
+    cardSubtitle: {
+      color: colors.textSecondary,
+      fontSize: 13,
+      marginBottom: spacing.lg,
+    },
+    centerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      columnGap: spacing.sm,
+    },
+    loadingText: {
+      color: colors.textSecondary,
+      fontSize: 14,
+      marginLeft: spacing.sm,
+    },
+    statusRow: {
+      marginBottom: spacing.lg,
+    },
+    statusPill: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      alignSelf: 'flex-start',
+      borderRadius: radii.pill,
+      paddingVertical: spacing.xs,
+      paddingHorizontal: spacing.md,
+      marginBottom: spacing.sm,
+    },
+    statusMuted: {
+      backgroundColor: 'rgba(248,113,113,0.12)',
+    },
+    statusActive: {
+      backgroundColor: colors.accentMuted,
+    },
+    statusDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 999,
+      marginRight: spacing.sm,
+    },
+    dotMuted: {
+      backgroundColor: colors.danger,
+    },
+    dotActive: {
+      backgroundColor: colors.accentSoft,
+    },
+    statusText: {
+      color: colors.textPrimary,
+      fontSize: 13,
+      fontWeight: '600',
+    },
+    statusHint: {
+      color: colors.textSecondary,
+      fontSize: 12,
+    },
+    toggleButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: radii.pill,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.xl,
+    },
+    toggleButtonActive: {
+      backgroundColor: colors.accent,
+    },
+    toggleButtonMuted: {
+      borderWidth: 1,
+      borderColor: colors.danger,
+      backgroundColor: 'transparent',
+    },
+    toggleButtonText: {
+      marginLeft: spacing.sm,
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.background,
+    },
+    mutatingText: {
+      marginTop: spacing.sm,
+      color: colors.textMuted,
+      fontSize: 12,
+    },
+    errorText: {
+      marginTop: spacing.lg,
+      color: colors.danger,
+      fontSize: 13,
+    },
+  });

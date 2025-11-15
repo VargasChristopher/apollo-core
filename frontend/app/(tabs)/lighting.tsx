@@ -8,8 +8,18 @@ import {
   Text,
   View,
 } from 'react-native';
-import { apolloApi, ApolloStatus, LightMode } from '../../lib/apolloCoreApi';
-import { colors, spacing, radii, shadows } from '../../constants/theme';
+import {
+  apolloApi,
+  ApolloStatus,
+  LightMode,
+} from '../../lib/apolloCoreApi';
+import {
+  useThemeColors,
+  ThemeColors,
+  spacing,
+  radii,
+  shadows,
+} from '../../constants/theme';
 
 type ModeConfig = {
   id: LightMode;
@@ -18,34 +28,17 @@ type ModeConfig = {
 };
 
 const LIGHT_MODES: ModeConfig[] = [
-  {
-    id: 'off',
-    label: 'Off',
-    description: 'All C by GE bulbs off.',
-  },
-  {
-    id: 'focus',
-    label: 'Focus',
-    description: 'Cooler temperature, bright. Great for work and study.',
-  },
-  {
-    id: 'relax',
-    label: 'Relax',
-    description: 'Warm, softer light for evenings or winding down.',
-  },
-  {
-    id: 'night',
-    label: 'Night',
-    description: 'Very low, warm light for late hours and navigation.',
-  },
-  {
-    id: 'energy',
-    label: 'Energy',
-    description: 'Bright, balanced light for daytime and guests.',
-  },
+  { id: 'off', label: 'Off',    description: 'All bulbs off.' },
+  { id: 'focus', label: 'Focus', description: 'Cooler temperature, bright. Great for work and study.' },
+  { id: 'relax', label: 'Relax', description: 'Warm, softer light for evenings or winding down.' },
+  { id: 'night', label: 'Night', description: 'Very low, warm light for late hours and navigation.' },
+  { id: 'energy', label: 'Energy', description: 'Bright, balanced light for daytime and guests.' },
 ];
 
 export default function LightingScreen() {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
+
   const [status, setStatus] = useState<ApolloStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [mutatingMode, setMutatingMode] = useState<LightMode | null>(null);
@@ -90,7 +83,7 @@ export default function LightingScreen() {
     >
       <Text style={styles.heading}>Lighting Modes</Text>
       <Text style={styles.subheading}>
-        Send lighting scenes to your C by GE smart bulbs through Apollo Core.
+        Send lighting scenes to your smart bulbs through Apollo Core.
       </Text>
 
       <View style={styles.card}>
@@ -142,12 +135,21 @@ export default function LightingScreen() {
               </Text>
               <Text style={styles.modeDescription}>{mode.description}</Text>
             </View>
-            <View
-              style={[
-                styles.modeDot,
-                isActive ? styles.modeDotActive : styles.modeDotIdle,
-              ]}
-            />
+
+            {isMutating ? (
+              <ActivityIndicator size="small" color={colors.accentSoft} />
+            ) : (
+              <View
+                style={[
+                  styles.modeDot,
+                  isActive ? styles.modeDotActive : styles.modeDotIdle,
+                ]}
+              >
+                {isActive && (
+                  <Text style={styles.modeDotCheck}>✓</Text>
+                )}
+              </View>
+            )}
           </Pressable>
         );
       })}
@@ -157,118 +159,126 @@ export default function LightingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  contentContainer: {
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.xl,
-    paddingBottom: spacing.xxl,
-  },
-  heading: {
-    color: colors.textPrimary,
-    fontSize: 24,
-    fontWeight: '700',
-    marginBottom: spacing.xs,
-  },
-  subheading: {
-    color: colors.textSecondary,
-    fontSize: 14,
-    marginBottom: spacing.xl,
-  },
-  card: {
-    borderRadius: radii.lg,
-    padding: spacing.xl,
-    borderWidth: 1,
-    borderColor: colors.borderSubtle,
-    backgroundColor: colors.surfaceCard,
-    marginBottom: spacing.xl,
-    ...shadows.soft,
-  },
-  cardTitle: {
-    color: colors.textPrimary,
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: spacing.sm,
-  },
-  cardSubtitle: {
-    color: colors.textSecondary,
-    fontSize: 13,
-    marginTop: spacing.sm,
-  },
-  centerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  loadingText: {
-    color: colors.textSecondary,
-    fontSize: 14,
-    marginLeft: spacing.sm,
-  },
-  currentModeText: {
-    color: colors.accentSoft,
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  sectionLabel: {
-    color: colors.textSecondary,
-    fontSize: 13,
-    marginBottom: spacing.sm,
-  },
-  modeRow: {
-    borderRadius: radii.md,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.borderSubtle,
-    backgroundColor: colors.surfaceCard,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  modeRowActive: {
-    borderColor: colors.accentSoft,
-    backgroundColor: colors.accentMuted,
-  },
-  modeRowMutating: {
-    opacity: 0.6,
-  },
-  modeTextGroup: {
-    flex: 1,
-    paddingRight: spacing.md,
-  },
-  modeLabel: {
-    color: colors.textPrimary,
-    fontSize: 15,
-    fontWeight: '600',
-    marginBottom: spacing.xs,
-  },
-  modeLabelActive: {
-    color: colors.accentSoft,
-  },
-  modeDescription: {
-    color: colors.textSecondary,
-    fontSize: 13,
-  },
-  modeDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 999,
-  },
-  modeDotIdle: {
-    borderWidth: 1,
-    borderColor: colors.textMuted,
-  },
-  modeDotActive: {
-    backgroundColor: colors.accentSoft,
-  },
-  errorText: {
-    marginTop: spacing.lg,
-    color: colors.danger,
-    fontSize: 13,
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    root: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    contentContainer: {
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing.xl,
+      paddingBottom: spacing.xxl,
+    },
+    heading: {
+      color: colors.textPrimary,
+      fontSize: 24,
+      fontWeight: '700',
+      marginBottom: spacing.xs,
+    },
+    subheading: {
+      color: colors.textSecondary,
+      fontSize: 14,
+      marginBottom: spacing.xl,
+    },
+    card: {
+      borderRadius: radii.lg,
+      padding: spacing.xl,
+      borderWidth: 1,
+      borderColor: colors.borderSubtle,
+      backgroundColor: colors.surfaceCard,
+      marginBottom: spacing.xl,
+      ...shadows.soft,
+    },
+    cardTitle: {
+      color: colors.textPrimary,
+      fontSize: 16,
+      fontWeight: '600',
+      marginBottom: spacing.sm,
+    },
+    cardSubtitle: {
+      color: colors.textSecondary,
+      fontSize: 13,
+      marginTop: spacing.sm,
+    },
+    centerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    loadingText: {
+      color: colors.textSecondary,
+      fontSize: 14,
+      marginLeft: spacing.sm,
+    },
+    currentModeText: {
+      color: colors.accentSoft,
+      fontSize: 20,
+      fontWeight: '700',
+    },
+    sectionLabel: {
+      color: colors.textSecondary,
+      fontSize: 13,
+      marginBottom: spacing.sm,
+    },
+    modeRow: {
+      borderRadius: radii.md,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.lg,
+      marginBottom: spacing.sm,
+      borderWidth: 1,
+      borderColor: colors.borderSubtle,
+      backgroundColor: colors.surfaceCard,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    modeRowActive: {
+      borderColor: colors.accentSoft,
+      backgroundColor: colors.accentMuted,
+    },
+    modeRowMutating: {
+      opacity: 0.7,
+    },
+    modeTextGroup: {
+      flex: 1,
+      paddingRight: spacing.md,
+    },
+    modeLabel: {
+      color: colors.textPrimary,
+      fontSize: 15,
+      fontWeight: '600',
+      marginBottom: spacing.xs,
+    },
+    modeLabelActive: {
+      color: colors.accentSoft,
+    },
+    modeDescription: {
+      color: colors.textSecondary,
+      fontSize: 13,
+    },
+    modeDot: {
+      width: 22,
+      height: 22,
+      borderRadius: 999,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    modeDotIdle: {
+      borderWidth: 1,
+      borderColor: colors.textMuted,
+    },
+    modeDotActive: {
+      backgroundColor: colors.accentSoft,
+    },
+    modeDotCheck: {
+      color: '#0b1120',
+      fontSize: 14,
+      fontWeight: '700',
+    },
+    errorText: {
+      marginTop: spacing.lg,
+      color: colors.danger,
+      fontSize: 13,
+    },
+  });

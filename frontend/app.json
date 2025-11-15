@@ -2,6 +2,7 @@
   "expo": {
     "name": "apollo-frontend",
     "slug": "apollo-frontend",
+    "userInterfaceStyle": "automatic",
     "scheme": "apollo",
     "version": "1.0.0",
     "orientation": "portrait",
