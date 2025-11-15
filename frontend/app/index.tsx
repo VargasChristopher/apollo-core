@@ -1,6 +1,6 @@
 // app/index.tsx
 import { Link } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, useColorScheme } from 'react-native';
 import {
   useThemeColors,
   ThemeColors,
@@ -11,6 +11,7 @@ import {
 
 export default function LandingScreen() {
   const colors = useThemeColors();
+  const scheme = useColorScheme();
   const styles = createStyles(colors);
 
   return (
@@ -48,6 +49,18 @@ const createStyles = (colors: ThemeColors) =>
       borderColor: colors.borderSubtle,
       backgroundColor: colors.surfaceCard,
       ...shadows.soft,
+    },
+    logoWrap: {
+      width: 72,
+      height: 72,
+      borderRadius: radii.lg,
+      marginBottom: spacing.lg,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    logo: {
+      width: 64,
+      height: 64,
     },
     kicker: {
       color: colors.accentSoft,

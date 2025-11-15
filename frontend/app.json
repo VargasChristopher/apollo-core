@@ -1,23 +1,33 @@
 {
   "expo": {
-    "name": "apollo-frontend",
-    "slug": "apollo-frontend",
+    "name": "Apollo Core",
+    "slug": "apollo-core",
     "userInterfaceStyle": "automatic",
     "scheme": "apollo",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
     "assetBundlePatterns": ["**/*"],
-    "web": {
-      "bundler": "metro"
-    },
     "experiments": {
       "typedRoutes": true
+    },
+    "icon": "./assets/images/apollo-logo-dark.png",
+    "ios": {
+      "icon": "./assets/images/apollo-logo-dark.png"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/apollo-logo-dark.png",
+        "backgroundColor": "#020617"
+      }
+    },
+    "web": {
+      "favicon": "./assets/images/favicon.png",
+      "name": "Apollo Core"
     }
   }
 }
