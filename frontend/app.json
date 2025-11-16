@@ -27,7 +27,33 @@
     },
     "web": {
       "favicon": "./assets/images/favicon.png",
-      "name": "Apollo Hub"
+      "name": "Apollo Hub",
+      "shortName": "Apollo",
+      "display": "standalone",
+      "backgroundColor": "#020617",
+      "themeColor": "#020617",
+      "manifest": {
+        "icons": [
+          {
+            "src": "./assets/images/apollo-icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+          },
+          {
+            "src": "./assets/images/apollo-icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+          },
+          {
+            "src": "./assets/images/apple-touch-icon.png",
+            "sizes": "180x180",
+            "type": "image/png",
+            "purpose": "any"
+          }
+        ]
+      }
     }
   }
 }
