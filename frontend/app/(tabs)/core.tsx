@@ -169,6 +169,7 @@ const createStyles = (colors: ThemeColors) =>
     },
     scrollContent: {
       flexGrow: 1,
+      backgroundColor: colors.background,
     },
     root: {
       flex: 1,
