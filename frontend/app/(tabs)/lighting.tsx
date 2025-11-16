@@ -8,11 +8,14 @@ import {
   Text,
   View,
 } from 'react-native';
+
 import {
-  apolloApi,
-  ApolloStatus,
+  getLightStatus,
+  setLightMode,
   LightMode,
-} from '../../lib/apolloCoreApi';
+} from '../../lib/homeAssistantApi';
+
+
 import {
   useThemeColors,
   ThemeColors,
@@ -28,53 +31,54 @@ type ModeConfig = {
 };
 
 const LIGHT_MODES: ModeConfig[] = [
-  { id: 'off', label: 'Off',    description: 'All bulbs off.' },
-  { id: 'focus', label: 'Focus', description: 'Cooler temperature, bright. Great for work and study.' },
-  { id: 'relax', label: 'Relax', description: 'Warm, softer light for evenings or winding down.' },
-  { id: 'night', label: 'Night', description: 'Very low, warm light for late hours and navigation.' },
-  { id: 'energy', label: 'Energy', description: 'Bright, balanced light for daytime and guests.' },
+  { id: 'on',     label: 'On',     description: 'All bulbs on.' },
+  { id: 'off',    label: 'Off',    description: 'All bulbs off.' },
+  // { id: 'focus',  label: 'Focus',  description: 'Cooler temperature, bright. Great for work and study.' },
+  // { id: 'relax',  label: 'Relax',  description: 'Warm, softer light for evenings or winding down.' },
+  // { id: 'night',  label: 'Night',  description: 'Very low, warm light for late hours and navigation.' },
+  // { id: 'energy', label: 'Energy', description: 'Bright, balanced light for daytime and guests.' },
 ];
 
 export default function LightingScreen() {
   const colors = useThemeColors();
   const styles = createStyles(colors);
 
-  const [status, setStatus] = useState<ApolloStatus | null>(null);
+  const [activeMode, setActiveMode] = useState<LightMode | null>(null);
   const [loading, setLoading] = useState(true);
   const [mutatingMode, setMutatingMode] = useState<LightMode | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+
   async function refresh() {
-    try {
-      setError(null);
-      setLoading(true);
-      const s = await apolloApi.getApolloStatus();
-      setStatus(s);
-    } catch (err: any) {
-      setError(err.message ?? 'Failed to load lighting status.');
-    } finally {
-      setLoading(false);
-    }
+  try {
+    setError(null);
+    setLoading(true);
+    const current = await getLightStatus();
+    setActiveMode(current);
+  } catch (err: any) {
+    setError(err.message ?? 'Failed to load lighting status.');
+  } finally {
+    setLoading(false);
   }
+}
+
 
   useEffect(() => {
     void refresh();
   }, []);
 
   async function onSelectMode(mode: LightMode) {
-    try {
-      setMutatingMode(mode);
-      setError(null);
-      const updated = await apolloApi.setLightMode(mode);
-      setStatus(updated);
-    } catch (err: any) {
-      setError(err.message ?? 'Failed to update light mode.');
-    } finally {
-      setMutatingMode(null);
-    }
+  try {
+    setMutatingMode(mode);
+    setError(null);
+    const resulting = await setLightMode(mode);
+    setActiveMode(resulting);
+  } catch (err: any) {
+    setError(err.message ?? 'Failed to update light mode.');
+  } finally {
+    setMutatingMode(null);
   }
-
-  const activeMode = status?.lightMode ?? null;
+}
 
   return (
     <ScrollView
