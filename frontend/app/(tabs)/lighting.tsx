@@ -190,7 +190,7 @@ export default function LightingScreen() {
             )}
             {width >= 768 && (
               <Text style={styles.cardSubtitle}>
-                Modes are applied centrally by Apollo Core.
+                Toggle lights individually with the checkboxes above.
               </Text>
             )}
           </View>
@@ -230,7 +230,7 @@ export default function LightingScreen() {
         
         {width < 768 && (
           <Text style={styles.cardSubtitle}>
-            Modes are applied centrally by Apollo Core.
+            Toggle lights individually with the checkboxes above.
           </Text>
         )}
       </View>
