@@ -124,3 +124,58 @@ export async function setLightBrightness(percent: number): Promise<number> {
 
   return clamped;
 }
+
+/**
+ * Turn on or off a specific individual light by index (0-3).
+ */
+export async function setIndividualLight(index: number, on: boolean): Promise<void> {
+  if (index < 0 || index >= ALL_ENTITIES.length) {
+    throw new Error(`Invalid light index: ${index}`);
+  }
+
+  const entityId = ALL_ENTITIES[index];
+  const service = on ? "turn_on" : "turn_off";
+  const url = `${HA_URL}/api/services/light/${service}`;
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${HA_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      entity_id: entityId,
+    }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`HA ${service} failed for ${entityId}: ${res.status} ${text}`);
+  }
+}
+
+/**
+ * Get the state of all individual lights.
+ * Returns an array of booleans indicating whether each light is on.
+ */
+export async function getAllLightStates(): Promise<boolean[]> {
+  const promises = ALL_ENTITIES.map(async (entityId) => {
+    const url = `${HA_URL}/api/states/${entityId}`;
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${HA_TOKEN}`,
+      },
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`HA getState failed for ${entityId}: ${res.status} ${text}`);
+    }
+
+    const data = await res.json();
+    return data.state === "on";
+  });
+
+  return Promise.all(promises);
+}
