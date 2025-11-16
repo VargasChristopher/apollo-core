@@ -220,7 +220,7 @@ export default function LightingScreen() {
                     <View style={isPortrait ? styles.bulbBaseMobile : styles.bulbBaseDesktop} />
                   </View>
                   <Text style={isPortrait ? styles.checkboxLabelMobile : styles.checkboxLabelDesktop}>
-                    {isPortrait ? `B${bulbNum}` : `Light ${bulbNum}`}
+                    {isPortrait ? `L${bulbNum}` : `Light ${bulbNum}`}
                   </Text>
                 </Pressable>
               );
