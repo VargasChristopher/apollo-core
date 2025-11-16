@@ -18,7 +18,7 @@ export default function TabsLayout() {
         },
         tabBarLabelStyle: {
           fontSize: 11,
-          marginBottom: 6,
+          marginBottom: 2,
           marginTop: 2,
         },
         tabBarActiveTintColor: colors.accent,
