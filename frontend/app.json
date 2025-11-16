@@ -30,8 +30,8 @@
       "name": "Apollo Hub",
       "shortName": "Apollo",
       "display": "standalone",
-      "backgroundColor": "#020617",
-      "themeColor": "#020617",
+      "backgroundColor": "#2f2f2f",
+      "themeColor": "#2f2f2f",
       "manifest": {
         "icons": [
           {
