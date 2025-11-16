@@ -1,5 +1,5 @@
 // app/(tabs)/core.tsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   ActivityIndicator,
   StyleSheet,
@@ -7,10 +7,12 @@ import {
   View,
   ScrollView,
   Pressable,
+  Platform,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { apolloApi, ApolloStatus } from '../../lib/apolloCoreApi';
+import { apolloApi, ApolloStatus, AudioCommandResponse } from '../../lib/apolloCoreApi';
 import {
   useThemeColors,
   ThemeColors,
@@ -33,6 +35,12 @@ export default function CoreScreen() {
   const [mutating, setMutating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isListening, setIsListening] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [lastResponse, setLastResponse] = useState<string | null>(null);
+  const [lastTranscription, setLastTranscription] = useState<string | null>(null);
+  const recordingRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   async function refresh() {
     try {
@@ -51,25 +59,229 @@ export default function CoreScreen() {
     void refresh();
   }, []);
 
+  async function startAudioRecording(): Promise<string | null> {
+    try {
+      // For web platform
+      if (Platform.OS === 'web') {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mediaRecorder = new MediaRecorder(stream, {
+          mimeType: 'audio/webm;codecs=opus',
+        });
+        
+        audioChunksRef.current = [];
+        recordingRef.current = mediaRecorder;
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
+
+        return new Promise((resolve, reject) => {
+          mediaRecorder.onstop = async () => {
+            stream.getTracks().forEach(track => track.stop());
+            
+            const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+            
+            // Convert to WAV format (simplified - in production, use a proper converter)
+            // For now, we'll send as webm and let the server handle it
+            const audioUrl = URL.createObjectURL(audioBlob);
+            resolve(audioUrl);
+          };
+
+          mediaRecorder.onerror = (event) => {
+            reject(new Error('Recording error'));
+          };
+
+          mediaRecorder.start();
+        });
+      } else {
+        // For native platforms (iOS/Android), we'd use expo-av
+        // For now, show an alert that native recording needs expo-av
+        Alert.alert(
+          'Audio Recording',
+          'Native audio recording requires expo-av. Please install it: npx expo install expo-av'
+        );
+        return null;
+      }
+    } catch (err: any) {
+      throw new Error(`Failed to start recording: ${err.message}`);
+    }
+  }
+
+  async function convertWebMToWAV(webmBlob: Blob): Promise<Blob> {
+    // Convert WebM to WAV using Web Audio API
+    const arrayBuffer = await webmBlob.arrayBuffer();
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    
+    // Resample to 16kHz and convert to mono
+    const targetSampleRate = 16000;
+    const sourceSampleRate = audioBuffer.sampleRate;
+    const ratio = sourceSampleRate / targetSampleRate;
+    const length = Math.floor(audioBuffer.length / ratio);
+    
+    // Create mono channel
+    const monoData = new Float32Array(length);
+    for (let i = 0; i < length; i++) {
+      const srcIndex = Math.floor(i * ratio);
+      // Mix all channels to mono
+      let sum = 0;
+      for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
+        sum += audioBuffer.getChannelData(channel)[srcIndex];
+      }
+      monoData[i] = sum / audioBuffer.numberOfChannels;
+    }
+    
+    // Convert to 16-bit PCM
+    const pcmData = new Int16Array(length);
+    for (let i = 0; i < length; i++) {
+      const s = Math.max(-1, Math.min(1, monoData[i]));
+      pcmData[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+    }
+    
+    // Create WAV file
+    const wavBuffer = new ArrayBuffer(44 + pcmData.length * 2);
+    const view = new DataView(wavBuffer);
+    
+    // WAV header
+    const writeString = (offset: number, string: string) => {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
+    };
+    
+    writeString(0, 'RIFF');
+    view.setUint32(4, 36 + pcmData.length * 2, true);
+    writeString(8, 'WAVE');
+    writeString(12, 'fmt ');
+    view.setUint32(16, 16, true); // fmt chunk size
+    view.setUint16(20, 1, true); // audio format (PCM)
+    view.setUint16(22, 1, true); // channels (mono)
+    view.setUint32(24, targetSampleRate, true); // sample rate
+    view.setUint32(28, targetSampleRate * 2, true); // byte rate
+    view.setUint16(32, 2, true); // block align
+    view.setUint16(34, 16, true); // bits per sample
+    writeString(36, 'data');
+    view.setUint32(40, pcmData.length * 2, true);
+    
+    // Write PCM data
+    const pcmView = new Int16Array(wavBuffer, 44);
+    pcmView.set(pcmData);
+    
+    return new Blob([wavBuffer], { type: 'audio/wav' });
+  }
+
+  async function stopAudioRecording(): Promise<string | null> {
+    if (Platform.OS === 'web' && recordingRef.current) {
+      recordingRef.current.stop();
+      recordingRef.current = null;
+      
+      // Wait a bit for the blob to be created
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      const webmBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+      
+      // Convert WebM to WAV
+      try {
+        const wavBlob = await convertWebMToWAV(webmBlob);
+        const audioUrl = URL.createObjectURL(wavBlob);
+        return audioUrl;
+      } catch (err: any) {
+        console.error('Error converting audio:', err);
+        // Fallback: try sending WebM anyway
+        const audioUrl = URL.createObjectURL(webmBlob);
+        return audioUrl;
+      }
+    }
+    return null;
+  }
+
   async function onSpeak() {
-    if (!status) return;
+    // If already recording, stop and send
+    if (isRecording) {
+      await stopRecordingAndSend();
+      return;
+    }
+
+    // If listening but not recording yet, start recording
+    if (isListening && !isRecording) {
+      try {
+        setIsRecording(true);
+        await startAudioRecording();
+      } catch (err: any) {
+        setError(err.message ?? 'Failed to start recording.');
+        setIsListening(false);
+        setIsRecording(false);
+        setIsProcessing(false);
+        setMutating(false);
+      }
+      return;
+    }
+
+    // Start new voice interaction
     try {
       setMutating(true);
       setError(null);
       setIsListening(true);
-      // Unmute to enable listening
-      const updated = await apolloApi.setMuted(false);
-      setStatus(updated);
-      // Auto-mute after some time if needed, or keep listening
+      setIsRecording(false);
+      setLastResponse(null);
+      setLastTranscription(null);
+
+      // First, trigger the "How can I help you" acknowledgment
+      await apolloApi.speakAcknowledgment();
+
+      // Wait a moment for TTS to start, then start recording
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      setIsRecording(true);
+      await startAudioRecording();
+
     } catch (err: any) {
-      setError(err.message ?? 'Failed to activate listening.');
+      setError(err.message ?? 'Failed to activate voice input.');
       setIsListening(false);
-    } finally {
+      setIsRecording(false);
+      setIsProcessing(false);
       setMutating(false);
     }
   }
 
-  const muted = status?.muted ?? false;
+  async function stopRecordingAndSend() {
+    try {
+      setIsRecording(false);
+      setIsProcessing(true);
+      setMutating(true);
+      setError(null);
+      
+      const audioUri = await stopAudioRecording();
+      
+      if (!audioUri) {
+        throw new Error('No audio recorded');
+      }
+
+      // Send audio to Apollo Core
+      const response: AudioCommandResponse = await apolloApi.sendAudioCommand(audioUri, true);
+      
+      setLastTranscription(response.transcription);
+      setLastResponse(response.response);
+      
+      // Clean up
+      if (Platform.OS === 'web' && audioUri.startsWith('blob:')) {
+        URL.revokeObjectURL(audioUri);
+      }
+
+      // Refresh status
+      await refresh();
+      
+    } catch (err: any) {
+      setError(err.message ?? 'Failed to process audio.');
+    } finally {
+      setIsListening(false);
+      setIsRecording(false);
+      setIsProcessing(false);
+      setMutating(false);
+    }
+  }
 
   return (
     <AnimatedGradient>
@@ -89,12 +301,12 @@ export default function CoreScreen() {
 
           {/* Voice Wave Visualization */}
           <View style={styles.waveContainer}>
-            <VoiceWave isActive={!loading && isListening} size={100} />
+            <VoiceWave isActive={!loading && (isListening || isRecording || isProcessing)} size={100} />
           </View>
 
           <PulsingCard 
             style={styles.card}
-            pulseOnMount={!loading && isListening}
+            pulseOnMount={!loading && (isListening || isRecording || isProcessing)}
             intensity={1.02}
           >
             <Text style={styles.cardTitle}>Voice Capture</Text>
@@ -123,12 +335,16 @@ export default function CoreScreen() {
                       ]}
                     />
                     <Text style={styles.statusText}>
-                      {isListening ? 'Listening' : 'Ready'}
+                      {isProcessing ? 'Processing' : isRecording ? 'Recording' : isListening ? 'Listening' : 'Ready'}
                     </Text>
                   </View>
                   <Text style={styles.statusHint}>
-                    {isListening
-                      ? 'Apollo is listening to your voice.'
+                    {isProcessing
+                      ? 'Processing your command...'
+                      : isRecording
+                      ? 'Recording your voice... Click Stop when done.'
+                      : isListening
+                      ? 'Press Start Recording to begin, or click Speak again to cancel.'
                       : 'Press Speak to activate voice input.'}
                   </Text>
                 </View>
@@ -136,30 +352,58 @@ export default function CoreScreen() {
                 <HapticButton
                   onPress={onSpeak}
                   variant="primary"
-                  disabled={mutating || isListening}
+                  disabled={isProcessing || (mutating && !isRecording)}
                   style={styles.toggleButton}
                   hapticStyle="medium"
                 >
                   <View style={styles.buttonContent}>
-                    <Ionicons
-                      name="mic-outline"
-                      size={24}
-                      color={colors.background}
-                      style={styles.buttonIcon}
-                    />
+                    {isProcessing ? (
+                      <ActivityIndicator 
+                        size="small" 
+                        color={colors.background} 
+                        style={styles.buttonIcon}
+                      />
+                    ) : (
+                      <Ionicons
+                        name={isRecording ? "stop-outline" : "mic-outline"}
+                        size={24}
+                        color={colors.background}
+                        style={styles.buttonIcon}
+                      />
+                    )}
                     <Text
                       style={[
                         styles.toggleButtonText,
                         { color: colors.background },
                       ]}
                     >
-                      {isListening ? 'Listening...' : 'Speak'}
+                      {isProcessing 
+                        ? 'Processing...' 
+                        : isRecording 
+                        ? 'Stop Recording' 
+                        : isListening 
+                        ? 'Start Recording' 
+                        : 'Speak'}
                     </Text>
                   </View>
                 </HapticButton>
 
-                {mutating && (
+                {mutating && !isRecording && !isProcessing && (
                   <Text style={styles.mutatingText}>Activating voice input…</Text>
+                )}
+
+                {lastTranscription && (
+                  <View style={styles.responseCard}>
+                    <Text style={styles.responseLabel}>You said:</Text>
+                    <Text style={styles.responseText}>{lastTranscription}</Text>
+                  </View>
+                )}
+
+                {lastResponse && (
+                  <View style={styles.responseCard}>
+                    <Text style={styles.responseLabel}>Apollo:</Text>
+                    <Text style={styles.responseText}>{lastResponse}</Text>
+                  </View>
                 )}
               </>
             )}
@@ -304,5 +548,23 @@ const createStyles = (colors: ThemeColors) =>
       fontSize: typography.bodyBase.fontSize,
       marginTop: spacing.lg,
       textAlign: 'center',
+    },
+    responseCard: {
+      marginTop: spacing.md,
+      padding: spacing.md,
+      borderRadius: radii.md,
+      backgroundColor: colors.surfaceCard,
+      borderWidth: 1,
+      borderColor: colors.borderSubtle,
+    },
+    responseLabel: {
+      color: colors.textSecondary,
+      fontSize: typography.bodyS.fontSize,
+      fontWeight: '600',
+      marginBottom: spacing.xs,
+    },
+    responseText: {
+      color: colors.textPrimary,
+      fontSize: typography.bodyBase.fontSize,
     },
   });
