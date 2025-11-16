@@ -37,7 +37,7 @@ jobs:
         working-directory: frontend
         env:
           EXPO_NO_TELEMETRY: 1
-        run: npx expo export --platform web
+        run: npm run web:export
 
       - name: Create SPA fallback 404
         run: cp frontend/dist/index.html frontend/dist/404.html
