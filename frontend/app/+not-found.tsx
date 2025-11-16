@@ -18,5 +18,5 @@ const styles = StyleSheet.create({
   container: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   title: { fontSize: 32, fontWeight: '700' },
   subtitle: { marginTop: 8, marginBottom: 16 },
-  link: { color: '#2563eb', fontWeight: '600' }
+  link: { color: '#06d6e6', fontWeight: '600' }
 });

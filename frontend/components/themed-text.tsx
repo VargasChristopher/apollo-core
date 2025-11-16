@@ -35,26 +35,28 @@ export function ThemedText({
 
 const styles = StyleSheet.create({
   default: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 16, // body-base
+    lineHeight: 25.6,
   },
   defaultSemiBold: {
     fontSize: 16,
-    lineHeight: 24,
+    lineHeight: 25.6,
     fontWeight: '600',
   },
   title: {
-    fontSize: 32,
+    fontSize: 40, // display-l
     fontWeight: 'bold',
-    lineHeight: 32,
+    lineHeight: 48,
+    letterSpacing: -1,
   },
   subtitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 20, // body-l
+    fontWeight: '600',
+    lineHeight: 30,
   },
   link: {
-    lineHeight: 30,
+    lineHeight: 25.6,
     fontSize: 16,
-    color: '#0a7ea4',
+    color: '#06d6e6', // Apollo Blue
   },
 });

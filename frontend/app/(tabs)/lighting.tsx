@@ -272,7 +272,7 @@ const createStyles = (colors: ThemeColors) =>
       backgroundColor: colors.accentSoft,
     },
     modeDotCheck: {
-      color: '#0b1120',
+      color: colors.background,
       fontSize: 14,
       fontWeight: '700',
     },
