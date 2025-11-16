@@ -195,7 +195,7 @@ export default function LightingScreen() {
             )}
             {width >= 768 && (
               <Text style={styles.cardSubtitle}>
-                Toggle lights individually with the checkboxes above.
+                Toggle lights individually with the checkboxes to the right.
               </Text>
             )}
           </View>

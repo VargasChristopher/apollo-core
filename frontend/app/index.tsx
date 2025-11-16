@@ -30,8 +30,7 @@ export default function LandingScreen() {
         <View style={styles.root}>
           {/* Hero Section */}
           <View style={styles.heroSection}>
-            <Text style={styles.kicker}>Apollo Hub</Text>
-            <Text style={styles.title}>Unified Smart Systems.</Text>
+            <Text style={styles.title}>Apollo Hub</Text>
             
             <RotatingText
               texts={[
@@ -46,7 +45,7 @@ export default function LandingScreen() {
             
             <Text style={styles.subtitle}>
               Control your Apollo voice assistant and smart lighting
-              from a single app, on web or mobile.
+              from a single app.
             </Text>
 
             <HapticButton
@@ -60,9 +59,6 @@ export default function LandingScreen() {
 
           {/* Feature Cards */}
           <View style={styles.featuresSection}>
-            <ShimmerText style={styles.sectionTitle}>
-              Features
-            </ShimmerText>
 
             <PulsingCard
               style={styles.featureCard}
@@ -86,7 +82,7 @@ export default function LandingScreen() {
                 <Text style={styles.featureTitle}>Smart Lighting</Text>
               </View>
               <Text style={styles.featureText}>
-                Control brightness, color, and effects
+                Control brightness and effects on multiple lights
               </Text>
             </PulsingCard>
 
