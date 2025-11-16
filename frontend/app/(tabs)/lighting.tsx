@@ -230,8 +230,7 @@ export default function LightingScreen() {
         
         {width < 768 && (
           <Text style={styles.cardSubtitle}>
-            Modes are applied centrally by Apollo Core, so web and mobile stay in
-            sync.
+            Modes are applied centrally by Apollo Core.
           </Text>
         )}
       </View>
