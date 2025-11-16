@@ -10,6 +10,8 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 
 import {
   getLightStatus,
@@ -166,6 +168,9 @@ export default function LightingScreen() {
       style={styles.root}
       contentContainerStyle={styles.contentContainer}
     >
+      <Pressable onPress={() => router.push('/')} style={styles.homeButton}>
+        <Ionicons name="home" size={24} color={colors.accent} />
+      </Pressable>
       <Text style={styles.heading}>Lighting Modes</Text>
       <Text style={styles.subheading}>
         Send lighting scenes to your smart bulbs through Apollo Core.
@@ -325,6 +330,15 @@ const createStyles = (colors: ThemeColors) =>
       paddingHorizontal: spacing.xl,
       paddingTop: spacing.xl,
       paddingBottom: spacing.xxl,
+    },
+    homeButton: {
+      alignSelf: 'flex-start',
+      padding: spacing.sm,
+      marginBottom: spacing.md,
+      borderRadius: radii.md,
+      backgroundColor: colors.surfaceCard,
+      borderWidth: 1,
+      borderColor: colors.borderSubtle,
     },
     heading: {
       color: colors.textPrimary,

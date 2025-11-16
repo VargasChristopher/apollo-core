@@ -6,8 +6,10 @@ import {
   Text,
   View,
   ScrollView,
+  Pressable,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { apolloApi, ApolloStatus } from '../../lib/apolloCoreApi';
 import {
   useThemeColors,
@@ -72,6 +74,9 @@ export default function CoreScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.root}>
+          <Pressable onPress={() => router.push('/')} style={styles.homeButton}>
+            <Ionicons name="home" size={24} color={colors.accent} />
+          </Pressable>
           <ShimmerText style={styles.heading}>Apollo Core</ShimmerText>
           <Text style={styles.subheading}>
             Jetson Nano voice assistant, powered by local Apollo AI.
@@ -89,7 +94,7 @@ export default function CoreScreen() {
           >
             <Text style={styles.cardTitle}>Voice Capture</Text>
             <Text style={styles.cardSubtitle}>
-              Toggle whether Apollo Core is listening for the wake word.
+              Toggle whether Apollo Core is listening.
             </Text>
 
             {loading ? (
@@ -176,6 +181,15 @@ const createStyles = (colors: ThemeColors) =>
       paddingHorizontal: spacing.xl,
       paddingTop: spacing.xl,
       paddingBottom: spacing.xxl,
+    },
+    homeButton: {
+      alignSelf: 'flex-start',
+      padding: spacing.sm,
+      marginBottom: spacing.md,
+      borderRadius: radii.md,
+      backgroundColor: colors.surfaceCard,
+      borderWidth: 1,
+      borderColor: colors.borderSubtle,
     },
     heading: {
       fontSize: typography.displayM.fontSize,
