@@ -2,10 +2,10 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Pressable,
   StyleSheet,
   Text,
   View,
+  ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { apolloApi, ApolloStatus } from '../../lib/apolloCoreApi';
@@ -14,8 +14,13 @@ import {
   ThemeColors,
   spacing,
   radii,
-  shadows,
+  typography,
 } from '../../constants/theme';
+import { PulsingCard } from '../../components/ui/pulsing-card';
+import { HapticButton } from '../../components/ui/haptic-button';
+import { ShimmerText } from '../../components/ui/shimmer-text';
+import { AnimatedGradient } from '../../components/ui/animated-gradient';
+import { VoiceWave } from '../../components/ui/voice-wave';
 
 export default function CoreScreen() {
   const colors = useThemeColors();
@@ -60,130 +65,158 @@ export default function CoreScreen() {
   const muted = status?.muted ?? false;
 
   return (
-    <View style={styles.root}>
-      <Text style={styles.heading}>Apollo Core</Text>
-      <Text style={styles.subheading}>
-        Jetson Nano voice assistant, powered by local Meta Llama.
-      </Text>
+    <AnimatedGradient>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.root}>
+          <ShimmerText style={styles.heading}>Apollo Core</ShimmerText>
+          <Text style={styles.subheading}>
+            Jetson Nano voice assistant, powered by local Apollo AI.
+          </Text>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Voice Capture</Text>
-        <Text style={styles.cardSubtitle}>
-          Toggle whether Apollo Core is listening for the wake word.
-        </Text>
-
-        {loading ? (
-          <View style={styles.centerRow}>
-            <ActivityIndicator color={colors.accentSoft} />
-            <Text style={styles.loadingText}>Connecting…</Text>
+          {/* Voice Wave Visualization */}
+          <View style={styles.waveContainer}>
+            <VoiceWave isActive={!loading && !muted} size={100} />
           </View>
-        ) : (
-          <>
-            <View style={styles.statusRow}>
-              <View
-                style={[
-                  styles.statusPill,
-                  muted ? styles.statusMuted : styles.statusActive,
-                ]}
-              >
-                <View
-                  style={[
-                    styles.statusDot,
-                    muted ? styles.dotMuted : styles.dotActive,
-                  ]}
-                />
-                <Text style={styles.statusText}>
-                  {muted ? 'Muted' : 'Listening'}
-                </Text>
+
+          <PulsingCard 
+            style={styles.card}
+            pulseOnMount={!loading && !muted}
+            intensity={1.02}
+          >
+            <Text style={styles.cardTitle}>Voice Capture</Text>
+            <Text style={styles.cardSubtitle}>
+              Toggle whether Apollo Core is listening for the wake word.
+            </Text>
+
+            {loading ? (
+              <View style={styles.centerRow}>
+                <ActivityIndicator color={colors.accentSoft} />
+                <Text style={styles.loadingText}>Connecting…</Text>
               </View>
-              <Text style={styles.statusHint}>
-                {muted
-                  ? 'Wake word and mic are disabled.'
-                  : 'Wake word and microphone are active.'}
-              </Text>
-            </View>
+            ) : (
+              <>
+                <View style={styles.statusRow}>
+                  <View
+                    style={[
+                      styles.statusPill,
+                      muted ? styles.statusMuted : styles.statusActive,
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.statusDot,
+                        muted ? styles.dotMuted : styles.dotActive,
+                      ]}
+                    />
+                    <Text style={styles.statusText}>
+                      {muted ? 'Muted' : 'Listening'}
+                    </Text>
+                  </View>
+                  <Text style={styles.statusHint}>
+                    {muted
+                      ? 'Wake word and mic are disabled.'
+                      : 'Wake word and microphone are active.'}
+                  </Text>
+                </View>
 
-            <Pressable
-              style={[
-                styles.toggleButton,
-                muted ? styles.toggleButtonMuted : styles.toggleButtonActive,
-              ]}
-              onPress={onToggleMute}
-              disabled={mutating}
-            >
-              <Ionicons
-                name={muted ? 'mic-off-outline' : 'mic-outline'}
-                size={28}
-                color={muted ? colors.textPrimary : colors.background}
-              />
-              <Text
-                style={[
-                  styles.toggleButtonText,
-                  muted && { color: colors.textPrimary },
-                ]}
-              >
-                {muted ? 'Unmute Apollo Core' : 'Mute Apollo Core'}
-              </Text>
-            </Pressable>
+                <HapticButton
+                  onPress={onToggleMute}
+                  variant={muted ? 'secondary' : 'primary'}
+                  disabled={mutating}
+                  style={styles.toggleButton}
+                  hapticStyle="medium"
+                >
+                  <View style={styles.buttonContent}>
+                    <Ionicons
+                      name={muted ? 'mic-off-outline' : 'mic-outline'}
+                      size={24}
+                      color={muted ? colors.accent : colors.background}
+                      style={styles.buttonIcon}
+                    />
+                    <Text
+                      style={[
+                        styles.toggleButtonText,
+                        { color: muted ? colors.accent : colors.background },
+                      ]}
+                    >
+                      {muted ? 'Unmute' : 'Mute'}
+                    </Text>
+                  </View>
+                </HapticButton>
 
-            {mutating && (
-              <Text style={styles.mutatingText}>Updating core state…</Text>
+                {mutating && (
+                  <Text style={styles.mutatingText}>Updating core state…</Text>
+                )}
+              </>
             )}
-          </>
-        )}
-      </View>
+          </PulsingCard>
 
-      {error && <Text style={styles.errorText}>{error}</Text>}
-    </View>
+          {error && <Text style={styles.errorText}>{error}</Text>}
+        </View>
+      </ScrollView>
+    </AnimatedGradient>
   );
 }
 
 const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
+    scrollView: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
+    },
     root: {
       flex: 1,
-      backgroundColor: colors.background,
       paddingHorizontal: spacing.xl,
       paddingTop: spacing.xl,
+      paddingBottom: spacing.xxl,
     },
     heading: {
-      color: colors.textPrimary,
-      fontSize: 24,
+      fontSize: typography.displayM.fontSize,
       fontWeight: '700',
       marginBottom: spacing.xs,
+      textAlign: 'center',
     },
     subheading: {
       color: colors.textSecondary,
-      fontSize: 14,
+      fontSize: typography.bodyBase.fontSize,
       marginBottom: spacing.xl,
+      textAlign: 'center',
+    },
+    waveContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: spacing.xl,
+      paddingVertical: spacing.lg,
     },
     card: {
-      borderRadius: radii.lg,
-      padding: spacing.xl,
-      borderWidth: 1,
-      borderColor: colors.borderSubtle,
-      backgroundColor: colors.surfaceCard,
-      ...shadows.soft,
+      marginBottom: spacing.lg,
     },
     cardTitle: {
       color: colors.textPrimary,
-      fontSize: 18,
+      fontSize: typography.bodyL.fontSize,
       fontWeight: '600',
       marginBottom: spacing.xs,
     },
     cardSubtitle: {
       color: colors.textSecondary,
-      fontSize: 13,
+      fontSize: typography.bodyS.fontSize,
       marginBottom: spacing.lg,
     },
     centerRow: {
       flexDirection: 'row',
       alignItems: 'center',
+      justifyContent: 'center',
       columnGap: spacing.sm,
     },
     loadingText: {
       color: colors.textSecondary,
-      fontSize: 14,
+      fontSize: typography.bodyBase.fontSize,
       marginLeft: spacing.sm,
     },
     statusRow: {
@@ -218,43 +251,38 @@ const createStyles = (colors: ThemeColors) =>
     },
     statusText: {
       color: colors.textPrimary,
-      fontSize: 13,
+      fontSize: typography.bodyS.fontSize,
       fontWeight: '600',
     },
     statusHint: {
       color: colors.textSecondary,
-      fontSize: 12,
+      fontSize: typography.meta.fontSize,
     },
     toggleButton: {
+      width: '100%',
+    },
+    buttonContent: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      borderRadius: radii.pill,
-      paddingVertical: spacing.md,
-      paddingHorizontal: spacing.xl,
     },
-    toggleButtonActive: {
-      backgroundColor: colors.accent,
-    },
-    toggleButtonMuted: {
-      borderWidth: 1,
-      borderColor: colors.danger,
-      backgroundColor: 'transparent',
+    buttonIcon: {
+      marginRight: spacing.sm,
     },
     toggleButtonText: {
-      marginLeft: spacing.sm,
-      fontSize: 16,
+      fontSize: typography.button.fontSize,
       fontWeight: '600',
-      color: colors.background,
     },
     mutatingText: {
-      marginTop: spacing.sm,
-      color: colors.textMuted,
-      fontSize: 12,
+      color: colors.textSecondary,
+      fontSize: typography.bodyS.fontSize,
+      textAlign: 'center',
+      marginTop: spacing.md,
     },
     errorText: {
-      marginTop: spacing.lg,
       color: colors.danger,
-      fontSize: 13,
+      fontSize: typography.bodyBase.fontSize,
+      marginTop: spacing.lg,
+      textAlign: 'center',
     },
   });
