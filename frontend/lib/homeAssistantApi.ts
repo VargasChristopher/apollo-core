@@ -1,6 +1,6 @@
 // lib/homeAssistantApi.ts
 
-const HA_URL = "http://192.168.1.202:8123";
+const HA_URL = "https://core.apollo-technologies.com";
 const HA_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI1ZDM5MzZlZjA2NmE0YmE5ODBhNTk3YjM4MzliNGY3YyIsImlhdCI6MTc2MzI1NjY2NSwiZXhwIjoyMDc4NjE2NjY1fQ.fF-THR034aklcOstj4uDz-k6cAx3UDiTycWOMpc15sY";
 const ENTITY_ID = "light.apollo";
 const ENTITY_ID_2 = "light.apollo_2";
