@@ -32,6 +32,7 @@ export default function CoreScreen() {
   const [loading, setLoading] = useState(true);
   const [mutating, setMutating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isListening, setIsListening] = useState(false);
 
   async function refresh() {
     try {
@@ -50,15 +51,19 @@ export default function CoreScreen() {
     void refresh();
   }, []);
 
-  async function onToggleMute() {
+  async function onSpeak() {
     if (!status) return;
     try {
       setMutating(true);
       setError(null);
-      const updated = await apolloApi.setMuted(!status.muted);
+      setIsListening(true);
+      // Unmute to enable listening
+      const updated = await apolloApi.setMuted(false);
       setStatus(updated);
+      // Auto-mute after some time if needed, or keep listening
     } catch (err: any) {
-      setError(err.message ?? 'Failed to update mute state.');
+      setError(err.message ?? 'Failed to activate listening.');
+      setIsListening(false);
     } finally {
       setMutating(false);
     }
@@ -84,12 +89,12 @@ export default function CoreScreen() {
 
           {/* Voice Wave Visualization */}
           <View style={styles.waveContainer}>
-            <VoiceWave isActive={!loading && !muted} size={100} />
+            <VoiceWave isActive={!loading && isListening} size={100} />
           </View>
 
           <PulsingCard 
             style={styles.card}
-            pulseOnMount={!loading && !muted}
+            pulseOnMount={!loading && isListening}
             intensity={1.02}
           >
             <Text style={styles.cardTitle}>Voice Capture</Text>
@@ -108,53 +113,53 @@ export default function CoreScreen() {
                   <View
                     style={[
                       styles.statusPill,
-                      muted ? styles.statusMuted : styles.statusActive,
+                      isListening ? styles.statusActive : styles.statusMuted,
                     ]}
                   >
                     <View
                       style={[
                         styles.statusDot,
-                        muted ? styles.dotMuted : styles.dotActive,
+                        isListening ? styles.dotActive : styles.dotMuted,
                       ]}
                     />
                     <Text style={styles.statusText}>
-                      {muted ? 'Muted' : 'Listening'}
+                      {isListening ? 'Listening' : 'Ready'}
                     </Text>
                   </View>
                   <Text style={styles.statusHint}>
-                    {muted
-                      ? 'Wake word and mic are disabled.'
-                      : 'Wake word and microphone are active.'}
+                    {isListening
+                      ? 'Apollo is listening to your voice.'
+                      : 'Press Speak to activate voice input.'}
                   </Text>
                 </View>
 
                 <HapticButton
-                  onPress={onToggleMute}
-                  variant={muted ? 'secondary' : 'primary'}
-                  disabled={mutating}
+                  onPress={onSpeak}
+                  variant="primary"
+                  disabled={mutating || isListening}
                   style={styles.toggleButton}
                   hapticStyle="medium"
                 >
                   <View style={styles.buttonContent}>
                     <Ionicons
-                      name={muted ? 'mic-off-outline' : 'mic-outline'}
+                      name="mic-outline"
                       size={24}
-                      color={muted ? colors.accent : colors.background}
+                      color={colors.background}
                       style={styles.buttonIcon}
                     />
                     <Text
                       style={[
                         styles.toggleButtonText,
-                        { color: muted ? colors.accent : colors.background },
+                        { color: colors.background },
                       ]}
                     >
-                      {muted ? 'Unmute' : 'Mute'}
+                      {isListening ? 'Listening...' : 'Speak'}
                     </Text>
                   </View>
                 </HapticButton>
 
                 {mutating && (
-                  <Text style={styles.mutatingText}>Updating core state…</Text>
+                  <Text style={styles.mutatingText}>Activating voice input…</Text>
                 )}
               </>
             )}
