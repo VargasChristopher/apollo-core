@@ -13,6 +13,7 @@ import { RotatingText } from '../components/ui/rotating-text';
 import { HapticButton } from '../components/ui/haptic-button';
 import { FloatingElements } from '../components/ui/floating-elements';
 import { ShimmerText } from '../components/ui/shimmer-text';
+import { FeatureIcon } from '../components/ui/feature-icon';
 import { router } from 'expo-router';
 
 export default function LandingScreen() {
@@ -67,7 +68,10 @@ export default function LandingScreen() {
               style={styles.featureCard}
               intensity={1.03}
             >
-              <Text style={styles.featureTitle}>🎙️ Voice Assistant</Text>
+              <View style={styles.featureHeader}>
+                <FeatureIcon type="voice" size={28} />
+                <Text style={styles.featureTitle}>Voice Assistant</Text>
+              </View>
               <Text style={styles.featureText}>
                 Powered by Apollo AI running on Jetson Nano
               </Text>
@@ -77,7 +81,10 @@ export default function LandingScreen() {
               style={styles.featureCard}
               intensity={1.03}
             >
-              <Text style={styles.featureTitle}>💡 Smart Lighting</Text>
+              <View style={styles.featureHeader}>
+                <FeatureIcon type="bulb" size={28} />
+                <Text style={styles.featureTitle}>Smart Lighting</Text>
+              </View>
               <Text style={styles.featureText}>
                 Control brightness, color, and effects
               </Text>
@@ -87,7 +94,10 @@ export default function LandingScreen() {
               style={styles.featureCard}
               intensity={1.03}
             >
-              <Text style={styles.featureTitle}>🌐 Cross Platform</Text>
+              <View style={styles.featureHeader}>
+                <FeatureIcon type="globe" size={28} />
+                <Text style={styles.featureTitle}>Cross Platform</Text>
+              </View>
               <Text style={styles.featureText}>
                 Works seamlessly on iOS, Android, and Web
               </Text>
@@ -158,11 +168,15 @@ const createStyles = (colors: ThemeColors) =>
     featureCard: {
       marginBottom: spacing.md,
     },
+    featureHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: spacing.sm,
+    },
     featureTitle: {
       color: colors.textPrimary,
       fontSize: typography.bodyL.fontSize,
       fontWeight: '600',
-      marginBottom: spacing.sm,
     },
     featureText: {
       color: colors.textSecondary,
