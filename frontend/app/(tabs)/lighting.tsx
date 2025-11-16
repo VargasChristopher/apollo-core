@@ -14,6 +14,8 @@ import {
   setLightMode,
   LightMode,
 } from '../../lib/homeAssistantApi';
+import { getLightBrightness, setLightBrightness } from '../../lib/homeAssistantApi';
+import Slider from '@react-native-community/slider';
 
 
 import {
@@ -33,10 +35,6 @@ type ModeConfig = {
 const LIGHT_MODES: ModeConfig[] = [
   { id: 'on',     label: 'On',     description: 'All bulbs on.' },
   { id: 'off',    label: 'Off',    description: 'All bulbs off.' },
-  // { id: 'focus',  label: 'Focus',  description: 'Cooler temperature, bright. Great for work and study.' },
-  // { id: 'relax',  label: 'Relax',  description: 'Warm, softer light for evenings or winding down.' },
-  // { id: 'night',  label: 'Night',  description: 'Very low, warm light for late hours and navigation.' },
-  // { id: 'energy', label: 'Energy', description: 'Bright, balanced light for daytime and guests.' },
 ];
 
 export default function LightingScreen() {
@@ -47,14 +45,24 @@ export default function LightingScreen() {
   const [loading, setLoading] = useState(true);
   const [mutatingMode, setMutatingMode] = useState<LightMode | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [brightness, setBrightness] = useState<number>(100);
+  const [loadingBrightness, setLoadingBrightness] = useState(false);
+  const [mutatingBrightness, setMutatingBrightness] = useState<boolean>(false);
 
 
   async function refresh() {
   try {
     setError(null);
     setLoading(true);
-    const current = await getLightStatus();
-    setActiveMode(current);
+      const [current, currentBrightness] = await Promise.all([
+        getLightStatus(),
+        getLightBrightness().catch(() => null),
+      ]);
+
+      setActiveMode(current);
+      if (typeof currentBrightness === 'number') {
+        setBrightness(currentBrightness);
+      }
   } catch (err: any) {
     setError(err.message ?? 'Failed to load lighting status.');
   } finally {
@@ -79,6 +87,19 @@ export default function LightingScreen() {
     setMutatingMode(null);
   }
 }
+
+  async function onCompleteBrightness(value: number) {
+    try {
+      setMutatingBrightness(true);
+      setError(null);
+      const resulting = await setLightBrightness(value);
+      setBrightness(resulting);
+    } catch (err: any) {
+      setError(err.message ?? 'Failed to update brightness.');
+    } finally {
+      setMutatingBrightness(false);
+    }
+  }
 
   return (
     <ScrollView
@@ -157,6 +178,35 @@ export default function LightingScreen() {
           </Pressable>
         );
       })}
+
+      <View style={styles.sliderCard}>
+        <Text style={styles.cardTitle}>Brightness</Text>
+        <Text style={styles.cardSubtitle}>Adjust overall bulb brightness (0–100%).</Text>
+
+        <View style={styles.sliderRow}>
+          <Slider
+            style={styles.slider}
+            minimumValue={0}
+            maximumValue={100}
+            step={1}
+            minimumTrackTintColor={colors.accentSoft}
+            maximumTrackTintColor={colors.borderSubtle}
+            thumbTintColor={colors.accentSoft}
+            value={brightness}
+            onValueChange={(v: number) => setBrightness(Math.round(v))}
+            onSlidingComplete={onCompleteBrightness}
+            disabled={mutatingBrightness}
+          />
+
+          <View style={styles.sliderValueWrap}>
+            {mutatingBrightness ? (
+              <ActivityIndicator size="small" color={colors.accentSoft} />
+            ) : (
+              <Text style={styles.sliderValue}>{brightness}%</Text>
+            )}
+          </View>
+        </View>
+      </View>
 
       {error && <Text style={styles.errorText}>{error}</Text>}
     </ScrollView>
@@ -285,4 +335,33 @@ const createStyles = (colors: ThemeColors) =>
       color: colors.danger,
       fontSize: 13,
     },
+      sliderCard: {
+        borderRadius: radii.lg,
+        padding: spacing.xl,
+        borderWidth: 1,
+        borderColor: colors.borderSubtle,
+        backgroundColor: colors.surfaceCard,
+        marginBottom: spacing.xl,
+        ...shadows.soft,
+      },
+      sliderRow: {
+        marginTop: spacing.sm,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.md,
+      },
+      slider: {
+        flex: 1,
+        height: 40,
+      },
+      sliderValueWrap: {
+        width: 56,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      sliderValue: {
+        color: colors.textPrimary,
+        fontSize: 15,
+        fontWeight: '700',
+      },
   });

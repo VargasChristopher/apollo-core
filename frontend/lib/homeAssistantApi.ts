@@ -67,6 +67,37 @@ export async function getLightStatus(): Promise<LightMode> {
 }
 
 /**
+ * Read the current brightness (0-100) from Home Assistant for the light.
+ * Returns null if brightness is not available.
+ */
+export async function getLightBrightness(): Promise<number | null> {
+  const url = `${HA_URL}/api/states/${ENTITY_ID}`;
+
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${HA_TOKEN}`,
+    },
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`HA getLightBrightness failed: ${res.status} ${text}`);
+  }
+
+  const data = await res.json();
+
+  // Home Assistant reports brightness in attributes.brightness as 0-255
+  const raw = (data?.attributes as any)?.brightness;
+  if (typeof raw === 'number') {
+    const percent = Math.round((raw / 255) * 100);
+    return Math.max(0, Math.min(100, percent));
+  }
+
+  return null;
+}
+
+/**
  * Very simple mapping for now:
  * - "off" turns the light off
  * - everything else just turns it on
@@ -79,4 +110,17 @@ export async function setLightMode(mode: LightMode): Promise<LightMode> {
     await callLightService("turn_on");
   }
   return mode;
+}
+
+/**
+ * Set brightness as percentage (0-100). This will call HA turn_on with a 0-255 brightness value.
+ * If percent is 0 this will still call `turn_on` with brightness 0 which some integrations may treat specially.
+ */
+export async function setLightBrightness(percent: number): Promise<number> {
+  const clamped = Math.max(0, Math.min(100, Math.round(percent)));
+  const brightness = Math.round((clamped / 100) * 255);
+
+  await callLightService('turn_on', { brightness });
+
+  return clamped;
 }
